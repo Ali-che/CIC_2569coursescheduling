@@ -71,6 +71,12 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
 .ei-chip{padding:2px 8px;font-size:10px;border:0.5px solid #AFA9EC;border-radius:20px;background:#fff;cursor:pointer;font-family:inherit}
 .tleg{display:flex;gap:8px;flex-wrap:wrap;padding:.75rem 1rem;background:#fff;border-radius:10px;border:0.5px solid #e0e0e0;margin-bottom:.875rem;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .tleg-i{display:flex;align-items:center;gap:5px;font-size:11px}
+.sem-cell{position:relative;cursor:default;padding:6px 14px!important}
+.sem-cell:hover .sem-tip{display:block}
+.sem-tip{display:none;position:absolute;top:110%;left:50%;transform:translateX(-50%);z-index:99;background:#fff;border:0.5px solid #ddd;border-radius:8px;padding:8px 12px;box-shadow:0 4px 16px rgba(0,0,0,.12);white-space:nowrap;margin-top:2px}
+.sem-val{font-size:15px;font-weight:600;color:#534AB7}
+.sem-zero{font-size:13px;color:#ccc}
+.tip-row{display:flex;gap:8px;align-items:center;margin-top:5px;font-size:12px}
 /* ── 动态加载 ── */
 .load-banner{display:none;align-items:center;gap:10px;padding:.75rem 1rem;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:10px;margin-bottom:.875rem;font-size:13px;color:#3C3489;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .load-dot{width:9px;height:9px;border-radius:50%;background:#534AB7;flex-shrink:0;animation:blink .7s infinite alternate}
@@ -178,7 +184,10 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
       <span class="ct" style="margin:0">排课记录 <span id="sch-n" style="font-weight:400;color:#888"></span>
         <span style="font-size:10px;color:#ccc;margin-left:6px">点击「课程代码」或「上下半」可排序</span>
       </span>
-      <div style="display:flex;gap:6px">
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="sch-sem-f" onchange="renderSch()" style="font-size:11px;padding:4px 8px;width:auto">
+          <option value="">全部学期</option><option>2569-1</option><option>2569-2</option><option>2569-3</option>
+        </select>
         <button class="btn btn-sm" onclick="syncToSheets('schedule')">↑ 上传</button>
         <button class="btn btn-sm" onclick="syncFromSheets('schedule')">↓ 下载</button>
       </div>
@@ -350,9 +359,9 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
             <th rowspan="2">#</th>
             <th rowspan="2">老师</th>
             <th rowspan="2">职位</th>
-            <th colspan="6" style="text-align:center;border-left:1px solid rgba(255,255,255,.3)">2569-1</th>
-            <th colspan="6" style="text-align:center;border-left:1px solid rgba(255,255,255,.3)">2569-2</th>
-            <th colspan="6" style="text-align:center;border-left:1px solid rgba(255,255,255,.3)">2569-3</th>
+            <th colspan="1" style="text-align:center;border-left:1px solid rgba(255,255,255,.3)">2569-1</th>
+            <th colspan="1" style="text-align:center;border-left:1px solid rgba(255,255,255,.3)">2569-2</th>
+            <th colspan="1" style="text-align:center;border-left:1px solid rgba(255,255,255,.3)">2569-3</th>
             <th rowspan="2" style="text-align:center;border-left:1px solid rgba(255,255,255,.3)">教学<br>总数</th>
             <th rowspan="2" style="text-align:center;background:#3C3489">BTEC/<br>LA500</th>
             <th rowspan="2" style="text-align:center">学年<br>规定</th>
@@ -360,9 +369,9 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
             <th rowspan="2" style="text-align:center">%</th>
           </tr>
           <tr>
-            <th style="border-left:1px solid rgba(255,255,255,.3)">总量</th><th>正常</th><th>英文</th><th>实习</th><th>SG</th><th>Cap</th>
-            <th style="border-left:1px solid rgba(255,255,255,.3)">总量</th><th>正常</th><th>英文</th><th>实习</th><th>SG</th><th>Cap</th>
-            <th style="border-left:1px solid rgba(255,255,255,.3)">总量</th><th>正常</th><th>英文</th><th>实习</th><th>SG</th><th>Cap</th>
+            <th style="border-left:1px solid rgba(255,255,255,.3);text-align:center">加权总量<br><span style="font-size:9px;opacity:.7">hover 查看细项</span></th>
+            <th style="border-left:1px solid rgba(255,255,255,.3);text-align:center">加权总量<br><span style="font-size:9px;opacity:.7">hover 查看细项</span></th>
+            <th style="border-left:1px solid rgba(255,255,255,.3);text-align:center">加权总量<br><span style="font-size:9px;opacity:.7">hover 查看细项</span></th>
           </tr>
         </thead>
         <tbody id="sta-tb"></tbody>
@@ -741,7 +750,9 @@ function renderSch(){
   const el_hl=document.getElementById('si-hl');if(el_hl)el_hl.innerHTML=siIcon('half',schSK,schSD);
   if(!schD.length){tb.innerHTML='';em.style.display='block';return;}
   em.style.display='none';
+  const semF=document.getElementById('sch-sem-f');
   let disp=[...schD];
+  if(semF&&semF.value)disp=disp.filter(r=>r.sem===semF.value);
   if(schSK==='course')disp.sort((a,b)=>schSD*a.course.localeCompare(b.course));
   if(schSK==='half'){const ho={'上半学期':0,'下半学期':1,'全学期':2};disp.sort((a,b)=>schSD*((ho[a.half]??2)-(ho[b.half]??2)));}
   tb.innerHTML=disp.map((r,i)=>{
@@ -938,13 +949,18 @@ function semDetail(tc,sem){
 }
 function sdCells(d,bl){
   const s=bl?'border-left:1px solid #eee;':'';
-  const v=(x)=>x?x:'<span style="color:#ddd">—</span>';
-  return'<td style="text-align:center;'+s+'">'+v(d.wt)+'</td>'+
-    '<td style="text-align:center">'+v(d.cnt.正常)+'</td>'+
-    '<td style="text-align:center">'+v(d.cnt.英文)+'</td>'+
-    '<td style="text-align:center">'+v(d.cnt.实习)+'</td>'+
-    '<td style="text-align:center">'+v(d.cnt.SG)+'</td>'+
-    '<td style="text-align:center">'+v(d.cnt.Capstone)+'</td>';
+  const hasData=d.wt>0;
+  // 细项 tooltip
+  const tipRows=[
+    ['正常',d.cnt.正常,'b0'],['英文',d.cnt.英文,'b6'],
+    ['实习',d.cnt.实习,'b2'],['SG',d.cnt.SG,'b3'],['Cap',d.cnt.Capstone,'b5']
+  ].filter(([,n])=>n>0)
+   .map(([k,n,b])=>'<div class="tip-row"><span class="badge '+b+'" style="font-size:10px">'+k+'</span><span>'+n+'门</span></div>')
+   .join('');
+  const tip=hasData?'<div class="sem-tip"><div style="color:#888;font-size:11px;margin-bottom:4px">课程细项</div>'+tipRows+'</div>':'';
+  return'<td class="sem-cell" style="text-align:center;'+s+'">'+
+    (hasData?'<span class="sem-val">'+d.wt+'</span>':'<span class="sem-zero">—</span>')+
+    tip+'</td>';
 }
 function saveBtec(el){
   const name=el.dataset.name;
@@ -1029,7 +1045,7 @@ function renderSta(){
     // 专业小计
     rows+='<tr class="dt">'+
       '<td colspan="3" style="text-align:right;padding-right:12px">'+dept+' 小计</td>'+
-      '<td colspan="18"></td>'+
+      '<td colspan="3"></td>'+
       '<td style="text-align:center;border-left:1px solid #eee"><strong>'+Math.round(dWt*100)/100+'</strong></td>'+
       '<td colspan="3"></td></tr>';
   });
