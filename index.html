@@ -87,8 +87,11 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
   #dc-wrap,.es-sec,.empty,
   .sem-tip{display:none!important}
 
-  /* 显示所有分页（让内容可见） */
-  .panel,.spanel{display:block!important}
+  /* 只显示当前 active 分页 */
+  .panel{display:none!important}
+  .panel.active{display:block!important}
+  .spanel{display:none!important}
+  .spanel.active{display:block!important}
 
   body{background:#fff;font-size:10.5px;color:#111;margin:0}
   .app{max-width:100%;padding:0;margin:0}
@@ -129,8 +132,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
   .ml{font-size:9px!important}
 
   /* 分页控制 */
-  .panel{page-break-after:always}
-  .panel:last-of-type{page-break-after:auto}
+  .card{page-break-inside:avoid}
 
   /* 页眉页脚 */
   @page{
