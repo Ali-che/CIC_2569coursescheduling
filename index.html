@@ -939,7 +939,9 @@ function sdCells(d,bl){
     '<td style="text-align:center">'+v(d.cnt.SG)+'</td>'+
     '<td style="text-align:center">'+v(d.cnt.Capstone)+'</td>';
 }
-function saveBtec(name,val){
+function saveBtec(el){
+  const name=el.dataset.name;
+  const val=el.value;
   btecD[name]=parseFloat(val)||0;
   // 更新学年总数显示（不重绘整表，只更新该行的相关 td）
   const t=T.find(x=>x.n===name);
@@ -1006,7 +1008,7 @@ function renderSta(){
         '<td style="text-align:center;background:#F5F4FE;padding:3px">'+
           '<input type="number" id="btec-'+k+'" value="'+(btec||'')+'" min="0" step="0.5" '+
           'style="width:58px;font-size:12px;padding:2px 4px;text-align:center;background:#fff;border:0.5px solid #AFA9EC;border-radius:5px" '+
-          'onchange="saveBtec(''+eh(t.n)+'',this.value)" placeholder="0">'+
+          'onchange="saveBtec(this)" data-name="'+eh(t.n)+'" placeholder="0">'+
         '</td>'+
         // 学年规定
         '<td style="text-align:center;color:#888;font-size:11px">'+t.l+'</td>'+
