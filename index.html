@@ -373,7 +373,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
 // ╔══════════════════════════════════════════════════════════╗
 // ║  配置区 — 修改 SHEETS_URL 即可启用 Google Sheets 同步     ║
 // ╚══════════════════════════════════════════════════════════╝
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyWTUJ9pKgjpyAUKGxJQevCMIggJRbAerV1CF2wlkRfrnMVKtK0Vm08pmUFEi8t9OPw/exec';  // ← 贴入 Apps Script Web App URL
+const SHEETS_URL = '';  // ← 贴入 Apps Script Web App URL
 
 // ╔══════════════════════════════════════════════════════════╗
 // ║  内建预设参考数据（SHEETS_URL 空白时自动使用）              ║
@@ -705,7 +705,7 @@ function addSch(){
   const sem=document.getElementById('s-sem').value,half=document.getElementById('s-half').value;
   const type=document.getElementById('s-tp').value,cls=document.getElementById('s-cls').value;
   const tc=document.getElementById('s-tc').value,nt=document.getElementById('s-nt').value,cc=getEG();
-  if(!course||!cls||!tc||!cc.length){alert('请填写：课程代码、班级、授课老师，并至少勾选一个届别');return;}
+  if(!course||!cls||!cc.length){alert('请填写：课程代码、班级，并至少勾选一个届别');return;}
   schD.push({id:Date.now(),course,en,sem,half,type,cls,tc,cc,nt,editing:false});
   renderSch();renderAllSum();renderSta();clearSchF();
 }
@@ -756,7 +756,7 @@ function renderSch(){
       '<td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+eh(r.en)+'">'+eh(r.en)+'</td>'+
       '<td><span class="badge '+(TB[r.type]||'b4')+'">'+r.type+'</span></td>'+
       '<td><span class="badge b4">'+r.sem+'</span></td><td style="font-size:11px">'+r.half+'</td>'+
-      '<td>'+r.cls+'</td><td style="font-size:12px;white-space:nowrap">'+eh(r.tc)+'</td>'+
+      '<td>'+r.cls+'</td><td style="font-size:12px;white-space:nowrap">'+(r.tc?eh(r.tc):'<span style="color:#bbb;font-style:italic">待定</span>')+'</td>'+
       '<td>'+tags+'</td><td><strong>'+tot+'</strong></td>'+
       '<td style="font-size:11px;color:#888">'+eh(r.nt||'—')+'</td>'+
       '<td style="white-space:nowrap"><button class="btn btn-e" onclick="startES('+r.id+')">更动</button> <button class="btn btn-d" onclick="delSch('+r.id+')">删除</button></td></tr>';
@@ -777,7 +777,7 @@ function addSp(){
   const co=document.getElementById('p-co').value.trim().toUpperCase(),en=document.getElementById('p-en').value;
   const cls=document.getElementById('p-cls').value,sem=document.getElementById('p-sem').value;
   const tc=document.getElementById('p-tc').value,nt=document.getElementById('p-nt').value;
-  if(!sid||!nm||!mj||!co||!tc){alert('请填写：学号、学生姓名、学生专业、课程代码、授课老师');return;}
+  if(!sid||!nm||!mj||!co){alert('请填写：学号、学生姓名、学生专业、课程代码');return;}
   if(/[^\x00-\x7F]/.test(nm)){alert('学生姓名请只填写英文字');return;}
   spD.push({id:Date.now(),sid,mr,nm,mj,co,en,cls,sem,tc,nt,type:'SG',editing:false});
   renderSp();renderAllSum();renderSta();clearSpF();
@@ -831,7 +831,7 @@ function renderSp(){
       '<td><span class="badge b4">'+r.mj+'</span></td><td><span class="badge b0">'+r.co+'</span></td>'+
       '<td style="max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+eh(r.en)+'">'+eh(r.en)+'</td>'+
       '<td>'+r.cls+'</td><td><span class="badge b4">'+r.sem+'</span></td>'+
-      '<td style="font-size:12px;white-space:nowrap">'+eh(r.tc)+'</td>'+
+      '<td style="font-size:12px;white-space:nowrap">'+(r.tc?eh(r.tc):'<span style="color:#bbb;font-style:italic">待定</span>')+'</td>'+
       '<td style="font-size:11px;color:#888">'+eh(r.nt||'—')+'</td>'+
       '<td style="white-space:nowrap"><button class="btn btn-e" onclick="startESp('+r.id+')">更动</button> <button class="btn btn-d" onclick="delSp('+r.id+')">删除</button></td></tr>';
   }).join('');
