@@ -9,10 +9,10 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#f5f5f7;color:#111;font-size:13px}
 .app{max-width:1400px;margin:0 auto;padding:1.5rem 1rem 3rem}
 .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem;flex-wrap:wrap;gap:8px}
-.tabs{display:flex;border-bottom:0.5px solid #ddd;margin-bottom:1.25rem;overflow-x:auto;background:#fff;border-radius:10px 10px 0 0;padding:0 1rem;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.tab{padding:11px 16px;font-size:13px;cursor:pointer;border:none;background:transparent;color:#666;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit;transition:all .15s}
-.tab.active{color:#534AB7;border-bottom:2px solid #534AB7;font-weight:500}
-.tab:hover:not(.active){background:#f5f5f5}
+.tabs{display:flex;gap:6px;margin-bottom:1.25rem;overflow-x:auto;background:transparent;padding:0}
+.tab{padding:10px 20px;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid #ddd;background:#fff;color:#888;border-radius:8px;white-space:nowrap;font-family:inherit;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.tab.active{background:#534AB7;color:#fff;border-color:#534AB7;box-shadow:0 2px 8px rgba(83,74,183,.3)}
+.tab:hover:not(.active){background:#f0effd;color:#534AB7;border-color:#AFA9EC}
 .panel{display:none}.panel.active{display:block}
 .stabs{display:flex;gap:5px;margin-bottom:.875rem;flex-wrap:wrap}
 .stab{padding:4px 12px;font-size:12px;cursor:pointer;border:0.5px solid #ddd;background:transparent;border-radius:20px;color:#666;font-family:inherit}
@@ -100,7 +100,6 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
     <button class="btn btn-sm" onclick="exportData()">💾 导出 JSON</button>
     <button class="btn btn-sm" onclick="importData()">📂 导入 JSON</button>
     <button class="btn btn-sm" id="btn-refresh" onclick="reloadRef()">↻ 刷新参考数据</button>
-    <button class="btn btn-sm btn-p" onclick="syncAll()">↑↓ Sheets 同步</button>
   </div>
 </div>
 
@@ -119,7 +118,8 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
   <span id="ref-cohorts" class="badge b4" style="font-size:11px">届别库 — 条</span>
   <span id="ref-depts" class="badge b4" style="font-size:11px">专业库 — 个</span>
   <span id="ref-time" style="font-size:10px;color:#bbb;margin-left:auto"></span>
-  <span id="sync-status-bar" style="font-size:11px;color:#888;margin-left:8px"></span>
+  <span id="sync-status-bar" style="font-size:11px;color:#888;margin-left:4px"></span>
+  <button class="btn btn-sm" onclick="syncAll()" style="font-size:10px;padding:3px 8px;color:#534AB7;border-color:#AFA9EC;margin-left:4px">↑↓ 同步</button>
 </div>
 
 <!-- ══ 权重说明 ════════════════════════════ -->
@@ -128,7 +128,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
 <!-- ══ 主标签 ═════════════════════════════ -->
 <div class="tabs">
   <button class="tab active" onclick="switchTab('sch')">📋 排课表</button>
-  <button class="tab" onclick="switchTab('sp')">👤 特别排课</button>
+  <button class="tab" onclick="switchTab('sp')">👤 IS/SG 排课</button>
   <button class="tab" onclick="switchTab('sum')">📊 学期总表</button>
   <button class="tab" onclick="switchTab('sta')">📈 教学统计</button>
 </div>
@@ -208,7 +208,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
 <!-- ══ 特别排课 ════════════════════════════ -->
 <div id="panel-sp" class="panel">
   <div class="card">
-    <div class="ct">新增特别排课</div>
+    <div class="ct">新增 IS/SG 排课</div>
     <div class="g4">
       <div class="fg"><label>学号</label><input id="p-id" placeholder="学号"></div>
       <div class="fg"><label>学生称谓</label>
@@ -239,7 +239,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
   </div>
   <div class="card">
     <div class="sechdr">
-      <span class="ct" style="margin:0">特别排课记录 <span id="sp-n" style="font-weight:400;color:#888"></span>
+      <span class="ct" style="margin:0">IS/SG 排课记录 <span id="sp-n" style="font-weight:400;color:#888"></span>
         <span style="font-size:10px;color:#ccc;margin-left:6px">点击「学号」或「授课老师」可排序</span>
       </span>
       <div style="display:flex;gap:6px">
@@ -307,6 +307,8 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
     <div class="fbar">
       <label>搜索</label><input id="f-stu" placeholder="姓名/学号" style="width:150px" oninput="renderSpStu()">
       <label>学生专业</label><select id="f-sm" onchange="renderSpStu()"><option value="">全部</option></select>
+      <label>学期</label>
+      <select id="f-sp-sem" onchange="renderSpStu()"><option value="">全部</option><option>2569-1</option><option>2569-2</option><option>2569-3</option></select>
     </div>
     <div class="card">
       <div class="ct">特别排课总表 · 学生维度</div>
@@ -916,8 +918,13 @@ function renderCoh(){
     '<td>'+halfBadge(r.half)+'</td><td style="font-size:12px">'+eh(r.tc)+'</td></tr>').join('');
 }
 function renderSpStu(){
-  const q=(document.getElementById('f-stu').value||'').toLowerCase(),mj=document.getElementById('f-sm').value;
-  let data=spD;if(q)data=data.filter(r=>(r.nm+r.sid).toLowerCase().includes(q));if(mj)data=data.filter(r=>r.mj===mj);
+  const q=(document.getElementById('f-stu').value||'').toLowerCase();
+  const mj=document.getElementById('f-sm').value;
+  const sem=document.getElementById('f-sp-sem')?document.getElementById('f-sp-sem').value:'';
+  let data=spD;
+  if(q)data=data.filter(r=>(r.nm+r.sid).toLowerCase().includes(q));
+  if(mj)data=data.filter(r=>r.mj===mj);
+  if(sem)data=data.filter(r=>r.sem===sem);
   const tb=document.getElementById('ss-tb'),em=document.getElementById('ss-em');
   if(!data.length){tb.innerHTML='';em.style.display='block';return;}em.style.display='none';
   const map={};data.forEach(r=>{if(!map[r.sid])map[r.sid]={sid:r.sid,mr:r.mr,nm:r.nm,mj:r.mj,rows:[]};map[r.sid].rows.push(r);});
