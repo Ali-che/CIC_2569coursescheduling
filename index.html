@@ -356,10 +356,10 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
     <div class="card">
       <div class="ct" id="tc-ttl">任课老师课程总表</div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>#</th><th>课程代码</th><th>课程英文名</th><th>类型</th><th>班级</th><th>学期</th><th>上下半</th><th>总人数</th><th>备注</th></tr></thead>
+        <table><thead><tr><th>#</th><th>课程代码</th><th>课程英文名</th><th>类型</th><th>授课老师</th><th>班级</th><th>学期</th><th>上下半</th><th>总人数</th><th>备注</th></tr></thead>
         <tbody id="tc-tb"></tbody></table>
       </div>
-      <div class="empty" id="tc-em">请选择任课老师</div>
+      <div class="empty" id="tc-em"></div>
     </div>
   </div>
   <div id="sub-sco" class="spanel">
@@ -371,12 +371,12 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
       <select id="f-co-s" onchange="renderCoh()"><option value="">全部</option><option>2569-1</option><option>2569-2</option><option>2569-3</option></select>
     </div>
     <div class="card">
-      <div class="ct">班级课程总表</div>
+      <div class="ct" id="co-ttl">班级课程总表</div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>#</th><th>课程代码</th><th>课程英文名</th><th>类型</th><th>班级代码</th><th>学期</th><th>上下半</th><th>任课老师</th></tr></thead>
+        <table id="co-table"><thead><tr><th>#</th><th>课程代码</th><th>课程英文名</th><th>类型</th><th>班级代码</th><th>学期</th><th>上下半</th><th>任课老师</th><th id="co-th-coh" style="display:none">届别</th></tr></thead>
         <tbody id="co-tb"></tbody></table>
       </div>
-      <div class="empty" id="co-em">请选择届别</div>
+      <div class="empty" id="co-em"></div>
     </div>
   </div>
   <div id="sub-sss" class="spanel">
@@ -985,14 +985,22 @@ function filterTchrByDept(){
 }
 function renderTchr(){
   const tc=document.getElementById('f-tc').value,sem=document.getElementById('f-tc-s').value,tp=document.getElementById('f-tc-t').value;
+  const dept=document.getElementById('f-tc-d')?document.getElementById('f-tc-d').value:'';
   const tb=document.getElementById('tc-tb'),em=document.getElementById('tc-em');
-  if(!tc){tb.innerHTML='';em.style.display='block';return;}
-  document.getElementById('tc-ttl').textContent='任课老师课程总表 · '+tc+(sem?' · '+sem:'');
-  let data=schD.filter(r=>r.tc===tc);if(sem)data=data.filter(r=>r.sem===sem);if(tp)data=data.filter(r=>r.type===tp);
+  const lbl=(tc?tc:(dept?dept+'专业':'全部老师'))+(sem?' · '+sem:'');
+  document.getElementById('tc-ttl').textContent='任课老师课程总表 · '+lbl;
+  // 无需先选老师，所有条件均为可选筛选
+  let data=[...schD];
+  if(tc)data=data.filter(r=>r.tc===tc);
+  else if(dept){const dTchrs=T.filter(t=>t.d===dept).map(t=>t.n);data=data.filter(r=>dTchrs.includes(r.tc));}
+  if(sem)data=data.filter(r=>r.sem===sem);
+  if(tp)data=data.filter(r=>r.type===tp);
   // 加入 SG/IS 排课
   let spRows=[];
   if(!tp||tp==='SG'){
-    let spData=spD.filter(r=>r.tc===tc);
+    let spData=[...spD];
+    if(tc)spData=spData.filter(r=>r.tc===tc);
+    else if(dept){const dTchrs=T.filter(t=>t.d===dept).map(t=>t.n);spData=spData.filter(r=>dTchrs.includes(r.tc));}
     if(sem)spData=spData.filter(r=>r.sem===sem);
     const spMap={};
     spData.forEach(r=>{
@@ -1002,7 +1010,7 @@ function renderTchr(){
     });
     spRows=Object.values(spMap);
   }
-  if(!data.length&&!spRows.length){tb.innerHTML='';em.textContent='该老师暂无符合条件的排课记录';em.style.display='block';return;}
+  if(!data.length&&!spRows.length){tb.innerHTML='';em.textContent='暂无符合条件的排课记录';em.style.display='block';return;}
   em.style.display='none';
   const schRows=data.map((r,i)=>{const tot=r.cc.reduce((s,x)=>s+(x.count||0),0);
     return'<tr><td>'+(i+1)+'</td><td><span class="badge b0">'+r.course+'</span></td>'+
@@ -1037,10 +1045,14 @@ function filterCohByDept(){
 }
 function renderCoh(){
   const co=document.getElementById('f-co').value,sem=document.getElementById('f-co-s').value;
+  const dept=document.getElementById('f-co-d')?document.getElementById('f-co-d').value:'';
   const tb=document.getElementById('co-tb'),em=document.getElementById('co-em');
-  if(!co){tb.innerHTML='';em.style.display='block';return;}
-  let data=schD.filter(r=>r.cc.some(x=>x.cohort===co));if(sem)data=data.filter(r=>r.sem===sem);
-  if(!data.length){tb.innerHTML='';em.textContent='该届别暂无排课记录';em.style.display='block';return;}
+  // 无需先选届别，直接显示全部
+  let data=[...schD];
+  if(co)data=data.filter(r=>r.cc.some(x=>x.cohort===co));
+  else if(dept)data=data.filter(r=>r.cc.some(x=>Object.keys(CBD).filter(d=>d===dept).flatMap(d=>CBD[d]).includes(x.cohort)));
+  if(sem)data=data.filter(r=>r.sem===sem);
+  if(!data.length){tb.innerHTML='';em.textContent='暂无符合条件的排课记录';em.style.display='block';return;}
   em.style.display='none';
   tb.innerHTML=data.map((r,i)=>'<tr><td>'+(i+1)+'</td><td><span class="badge b0">'+r.course+'</span></td>'+
     '<td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+eh(r.en)+'</td>'+
