@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>排课管理系统 · 2569学年</title>
+<title>CIC 本科排课管理系统 · 2569学年</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#f5f5f7;color:#111;font-size:13px}
@@ -113,6 +113,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
   <span id="ref-cohorts" class="badge b4" style="font-size:11px">届别库 — 条</span>
   <span id="ref-depts" class="badge b4" style="font-size:11px">专业库 — 个</span>
   <span id="ref-time" style="font-size:10px;color:#bbb;margin-left:auto"></span>
+  <span id="sync-status-bar" style="font-size:11px;color:#888;margin-left:8px"></span>
 </div>
 
 <!-- ══ 权重说明 ════════════════════════════ -->
@@ -707,9 +708,9 @@ function addSch(){
   const tc=document.getElementById('s-tc').value,nt=document.getElementById('s-nt').value,cc=getEG();
   if(!course||!cls||!cc.length){alert('请填写：课程代码、班级，并至少勾选一个届别');return;}
   schD.push({id:Date.now(),course,en,sem,half,type,cls,tc,cc,nt,editing:false});
-  renderSch();renderAllSum();renderSta();clearSchF();
+  renderSch();renderAllSum();renderSta();clearSchF();autoSync('schedule');
 }
-function delSch(id){if(!confirm('确认删除？'))return;schD=schD.filter(r=>r.id!==id);renderSch();renderAllSum();renderSta();}
+function delSch(id){if(!confirm('确认删除？'))return;schD=schD.filter(r=>r.id!==id);renderSch();renderAllSum();renderSta();autoSync('schedule');}
 function startES(id){schD.forEach(r=>r.editing=(r.id===id));renderSch();}
 function saveES(id){
   const r=schD.find(x=>x.id===id);if(!r)return;
@@ -719,7 +720,7 @@ function saveES(id){
   if(g('ess-'))r.sem=g('ess-');if(g('esh-'))r.half=g('esh-');
   if(g('est-'))r.type=g('est-');if(g('escl-'))r.cls=g('escl-');
   if(g('estc-'))r.tc=g('estc-');if(g('esnt-')!==null)r.nt=g('esnt-');
-  r.cc=collectEC(id);r.editing=false;renderSch();renderAllSum();renderSta();
+  r.cc=collectEC(id);r.editing=false;renderSch();renderAllSum();renderSta();autoSync('schedule');
 }
 function renderSch(){
   const tb=document.getElementById('sch-tb'),em=document.getElementById('sch-em');
@@ -780,9 +781,9 @@ function addSp(){
   if(!sid||!nm||!mj||!co){alert('请填写：学号、学生姓名、学生专业、课程代码');return;}
   if(/[^\x00-\x7F]/.test(nm)){alert('学生姓名请只填写英文字');return;}
   spD.push({id:Date.now(),sid,mr,nm,mj,co,en,cls,sem,tc,nt,type:'SG',editing:false});
-  renderSp();renderAllSum();renderSta();clearSpF();
+  renderSp();renderAllSum();renderSta();clearSpF();autoSync('special');
 }
-function delSp(id){if(!confirm('确认删除？'))return;spD=spD.filter(r=>r.id!==id);renderSp();renderAllSum();renderSta();}
+function delSp(id){if(!confirm('确认删除？'))return;spD=spD.filter(r=>r.id!==id);renderSp();renderAllSum();renderSta();autoSync('special');}
 function startESp(id){spD.forEach(r=>r.editing=(r.id===id));renderSp();}
 function saveESp(id){
   const r=spD.find(x=>x.id===id);if(!r)return;
@@ -793,7 +794,7 @@ function saveESp(id){
   if(g('epco-')){r.co=g('epco-').toUpperCase();const f=C.find(x=>x.c===r.co);if(f)r.en=f.en;}
   if(g('epcl-'))r.cls=g('epcl-');if(g('epsm-'))r.sem=g('epsm-');
   if(g('eptc-'))r.tc=g('eptc-');if(g('epnt-')!==null)r.nt=g('epnt-');
-  r.editing=false;renderSp();renderAllSum();renderSta();
+  r.editing=false;renderSp();renderAllSum();renderSta();autoSync('special');
 }
 function renderSp(){
   const tb=document.getElementById('sp-tb'),em=document.getElementById('sp-em');
@@ -980,16 +981,57 @@ function importData(){
 }
 
 // ── Sheets 同步 ───────────────────────────
-async function syncAll(){
-  if(!SHEETS_URL){alert('请先在代码中配置 SHEETS_URL\n\n步骤：\n1. 执行 Apps Script 中的 setupSheets()\n2. 部署为 Web App\n3. 将 URL 填入此档案顶部的 SHEETS_URL');return;}
-  await syncToSheets('schedule');await syncToSheets('special');
+let syncTimer=null;
+function setSyncStatus(msg,ok){
+  const el=document.getElementById('sync-status-bar');
+  if(el){el.textContent=msg;el.style.color=ok===true?'#3B6D11':ok===false?'#a32d2d':'#888';}
 }
+
+// 自动同步（静默，防抖 2 秒）
+function autoSync(type){
+  if(!SHEETS_URL)return;
+  clearTimeout(syncTimer);
+  setSyncStatus('⏳ 正在同步…','');
+  syncTimer=setTimeout(async()=>{
+    try{
+      const data=type==='schedule'?schD:spD;
+      const res=await fetch(SHEETS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'write',type,data})});
+      const r=await res.json();
+      const t=new Date().toLocaleTimeString();
+      setSyncStatus(r.success?'✅ 已同步 '+t:'❌ 同步失败',r.success);
+    }catch(e){setSyncStatus('❌ 连线失败',false);}
+  },2000);
+}
+
+// 手动全部同步（有提示）
+async function syncAll(){
+  if(!SHEETS_URL){alert('请先配置 SHEETS_URL');return;}
+  setSyncStatus('⏳ 正在同步…','');
+  try{
+    const r1=await fetchWrite('schedule',schD);
+    const r2=await fetchWrite('special',spD);
+    const t=new Date().toLocaleTimeString();
+    const msg=(r1&&r2)?'✅ 已同步 '+t:'❌ 部分同步失败';
+    setSyncStatus(msg,r1&&r2);
+    alert(r1&&r2?'✅ 两份数据已同步至 Google Sheets！':'❌ 同步失败，请检查连线');
+  }catch(e){setSyncStatus('❌ 连线失败',false);alert('❌ 连线失败');}
+}
+async function fetchWrite(type,data){
+  const res=await fetch(SHEETS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'write',type,data})});
+  const r=await res.json();return r.success;
+}
+
+// 手动上传（有提示）
 async function syncToSheets(type){
   if(!SHEETS_URL){alert('请先配置 SHEETS_URL');return;}
   const data=type==='schedule'?schD:spD;
+  setSyncStatus('⏳ 正在同步…','');
   try{const res=await fetch(SHEETS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'write',type,data})});
-    const r=await res.json();r.success?alert('✅ 上传成功！'+r.message):alert('❌ 上传失败：'+r.error);
-  }catch(e){alert('❌ 连线失败，请检查 SHEETS_URL');}
+    const r=await res.json();
+    const t=new Date().toLocaleTimeString();
+    setSyncStatus(r.success?'✅ 已同步 '+t:'❌ 同步失败',r.success);
+    r.success?alert('✅ 上传成功！'):alert('❌ 上传失败：'+r.error);
+  }catch(e){setSyncStatus('❌ 连线失败',false);alert('❌ 连线失败');}
 }
 async function syncFromSheets(type){
   if(!SHEETS_URL){alert('请先配置 SHEETS_URL');return;}
