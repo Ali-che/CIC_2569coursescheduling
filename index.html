@@ -743,6 +743,12 @@ function saveES(id){
   if(g('estc-'))r.tc=g('estc-');if(g('esnt-')!==null)r.nt=g('esnt-');
   r.cc=collectEC(id);r.editing=false;renderSch();renderAllSum();renderSta();autoSync('schedule');
 }
+function halfBadge(h){
+  if(h==='上半学期')return'<span class="badge b0">上半学期</span>';
+  if(h==='下半学期')return'<span class="badge b2">下半学期</span>';
+  if(h==='全学期')return'<span class="badge b6">全学期</span>';
+  return'<span style="color:#bbb;font-style:italic">待定</span>';
+}
 function renderSch(){
   const tb=document.getElementById('sch-tb'),em=document.getElementById('sch-em');
   document.getElementById('sch-n').textContent='('+schD.length+'条)';
@@ -779,7 +785,7 @@ function renderSch(){
     return'<tr><td>'+(i+1)+'</td><td><span class="badge b0">'+r.course+'</span></td>'+
       '<td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+eh(r.en)+'">'+eh(r.en)+'</td>'+
       '<td><span class="badge '+(TB[r.type]||'b4')+'">'+r.type+'</span></td>'+
-      '<td><span class="badge b4">'+r.sem+'</span></td><td style="font-size:11px">'+(r.half?r.half:'<span style="color:#bbb;font-style:italic">待定</span>')+'</td>'+
+      '<td><span class="badge b4">'+r.sem+'</span></td><td>'+halfBadge(r.half)+'</td>'+
       '<td>'+r.cls+'</td><td style="font-size:12px;white-space:nowrap">'+(r.tc?eh(r.tc):'<span style="color:#bbb;font-style:italic">待定</span>')+'</td>'+
       '<td>'+tags+'</td><td><strong>'+tot+'</strong></td>'+
       '<td style="font-size:11px;color:#888">'+eh(r.nt||'—')+'</td>'+
@@ -879,7 +885,7 @@ function renderTchr(){
       '<td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+eh(r.en)+'</td>'+
       '<td><span class="badge '+(TB[r.type]||'b4')+'">'+r.type+'</span></td>'+
       '<td>'+r.cls+'</td><td><span class="badge b4">'+r.sem+'</span></td>'+
-      '<td style="font-size:11px">'+(r.half?r.half:'<span style="color:#bbb;font-style:italic">待定</span>')+'</td><td>'+(tot||'—')+'</td>'+
+      '<td>'+halfBadge(r.half)+'</td><td>'+(tot||'—')+'</td>'+
       '<td style="font-size:11px;color:#888">'+eh(r.nt||'—')+'</td></tr>';}).join('');
 }
 function filterCohByDept(){
@@ -907,7 +913,7 @@ function renderCoh(){
     '<td style="max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+eh(r.en)+'</td>'+
     '<td><span class="badge '+(TB[r.type]||'b4')+'">'+r.type+'</span></td>'+
     '<td>'+r.cls+'</td><td><span class="badge b4">'+r.sem+'</span></td>'+
-    '<td style="font-size:11px">'+(r.half?r.half:'<span style="color:#bbb;font-style:italic">待定</span>')+'</td><td style="font-size:12px">'+eh(r.tc)+'</td></tr>').join('');
+    '<td>'+halfBadge(r.half)+'</td><td style="font-size:12px">'+eh(r.tc)+'</td></tr>').join('');
 }
 function renderSpStu(){
   const q=(document.getElementById('f-stu').value||'').toLowerCase(),mj=document.getElementById('f-sm').value;
