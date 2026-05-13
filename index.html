@@ -242,7 +242,10 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
       <span class="ct" style="margin:0">IS/SG 排课记录 <span id="sp-n" style="font-weight:400;color:#888"></span>
         <span style="font-size:10px;color:#ccc;margin-left:6px">点击「学号」或「授课老师」可排序</span>
       </span>
-      <div style="display:flex;gap:6px">
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="sp-sem-f" onchange="renderSp()" style="font-size:11px;padding:4px 8px;width:auto">
+          <option value="">全部学期</option><option>2569-1</option><option>2569-2</option><option>2569-3</option>
+        </select>
         <button class="btn btn-sm" onclick="syncToSheets('special')">↑ 上传</button>
         <button class="btn btn-sm" onclick="syncFromSheets('special')">↓ 下载</button>
       </div>
@@ -315,7 +318,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
     <div class="card">
       <div class="ct">SG/IS 排课总表 · 学生维度</div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>#</th><th>学号</th><th>称谓</th><th>学生姓名</th><th>学生专业</th><th>特别课数</th><th>课程代码</th><th>课程英文名</th><th>备注</th></tr></thead>
+        <table><thead><tr><th>#</th><th>学号</th><th>称谓</th><th>学生姓名</th><th>学生专业</th><th>特别课数</th><th>课程代码</th><th>课程英文名</th><th>学期</th><th>备注</th></tr></thead>
         <tbody id="ss-tb"></tbody></table>
       </div>
       <div class="empty" id="ss-em">暂无数据</div>
@@ -326,11 +329,13 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
       <label>专业</label>
       <select id="f-st-d" onchange="filterSpTchrByDept()"><option value="">全部</option></select>
       <label>授课老师</label><select id="f-st" onchange="renderSpTchr()"><option value="">请选择</option></select>
+      <label>学期</label>
+      <select id="f-st-s" onchange="renderSpTchr()"><option value="">全部</option><option>2569-1</option><option>2569-2</option><option>2569-3</option></select>
     </div>
     <div class="card">
       <div class="ct">SG/IS 排课总表 · 老师维度</div>
       <div class="tbl-wrap">
-        <table><thead><tr><th>#</th><th>课程代码</th><th>课程英文名</th><th>学生名单</th><th>学期</th><th>课程总人数</th></tr></thead>
+        <table><thead><tr><th>#</th><th>课程代码</th><th>课程英文名</th><th>学号</th><th>学生称谓</th><th>学生姓名</th><th>学生专业</th><th>学期</th><th>课程总人数</th></tr></thead>
         <tbody id="st-tb"></tbody></table>
       </div>
       <div class="empty" id="st-em">请选择老师</div>
@@ -846,7 +851,9 @@ function renderSp(){
   const el_tc=document.getElementById('si-tc');if(el_tc)el_tc.innerHTML=siIcon('tc',spSK,spSD);
   if(!spD.length){tb.innerHTML='';em.style.display='block';return;}
   em.style.display='none';
+  const spSemF=document.getElementById('sp-sem-f');
   let disp=[...spD];
+  if(spSemF&&spSemF.value)disp=disp.filter(r=>r.sem===spSemF.value);
   if(spSK==='sid')disp.sort((a,b)=>spSD*a.sid.localeCompare(b.sid));
   if(spSK==='tc')disp.sort((a,b)=>{const ta=T.find(x=>x.n===a.tc),tb2=T.find(x=>x.n===b.tc);return spSD*((ta?ta.d:'ZZ').localeCompare(tb2?tb2.d:'ZZ')||a.tc.localeCompare(b.tc));});
   tb.innerHTML=disp.map((r,i)=>{
@@ -987,6 +994,7 @@ function renderSpStu(){
       '<td><strong>'+s.rows.length+'</strong></td>'+
       '<td>'+s.rows.map(r=>'<span class="badge b0" style="margin:1px">'+r.co+'</span>').join('')+'</td>'+
       '<td>'+s.rows.map(r=>'<span style="font-size:11px">'+eh(r.en)+'</span>').join('<br>')+'</td>'+
+      '<td>'+s.rows.map(r=>'<span class="badge b4" style="margin:1px">'+r.sem+'</span>').join('<br>')+'</td>'+
       '<td style="font-size:11px;color:#888">'+(s.rows.filter(r=>r.nt).map(r=>r.nt).join('；')||'—')+'</td></tr>';}).join('');
 }
 function filterSpTchrByDept(){
@@ -1008,16 +1016,38 @@ function filterSpTchrByDept(){
   renderSpTchr();
 }
 function renderSpTchr(){
-  const tc=document.getElementById('f-st').value,tb=document.getElementById('st-tb'),em=document.getElementById('st-em');
+  const tc=document.getElementById('f-st').value;
+  const sem=document.getElementById('f-st-s')?document.getElementById('f-st-s').value:'';
+  const tb=document.getElementById('st-tb'),em=document.getElementById('st-em');
   if(!tc){tb.innerHTML='';em.style.display='block';return;}
-  const data=spD.filter(r=>r.tc===tc);
+  let data=spD.filter(r=>r.tc===tc);
+  if(sem)data=data.filter(r=>r.sem===sem);
   if(!data.length){tb.innerHTML='';em.textContent='该老师暂无 SG/IS 排课记录';em.style.display='block';return;}
   em.style.display='none';
-  const cm={};data.forEach(r=>{if(!cm[r.co])cm[r.co]={co:r.co,en:r.en,stus:[],sems:new Set()};cm[r.co].stus.push(r.mr+' '+r.nm);cm[r.co].sems.add(r.sem);});
-  tb.innerHTML=Object.values(cm).map((x,i)=>'<tr><td>'+(i+1)+'</td><td><span class="badge b0">'+x.co+'</span></td><td>'+eh(x.en)+'</td>'+
-    '<td>'+x.stus.map(s=>'<span class="tag">'+eh(s)+'</span>').join('')+'</td>'+
-    '<td>'+[...x.sems].map(s=>'<span class="badge b4">'+s+'</span>').join(' ')+'</td>'+
-    '<td><strong>'+x.stus.length+'</strong></td></tr>').join('');
+  // 按课程分组，每门课展开所有学生
+  const cm={};
+  data.forEach(r=>{
+    if(!cm[r.co])cm[r.co]={co:r.co,en:r.en,stus:[],sems:new Set()};
+    cm[r.co].stus.push({sid:r.sid,mr:r.mr,nm:r.nm,mj:r.mj,sem:r.sem});
+    cm[r.co].sems.add(r.sem);
+  });
+  let idx=0;
+  tb.innerHTML=Object.values(cm).map(x=>{
+    const rows=x.stus.map((s,si)=>{
+      idx++;
+      return'<tr>'+
+        (si===0?'<td rowspan="'+x.stus.length+'"><span class="badge b0">'+x.co+'</span></td>'+
+          '<td rowspan="'+x.stus.length+'" style="max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+eh(x.en)+'</td>':'')+ 
+        '<td><code style="font-size:11px">'+eh(s.sid||'—')+'</code></td>'+
+        '<td><span class="badge b4">'+s.mr+'</span></td>'+
+        '<td>'+eh(s.nm)+'</td>'+
+        '<td><span class="badge b4">'+s.mj+'</span></td>'+
+        '<td><span class="badge b4">'+s.sem+'</span></td>'+
+        (si===0?'<td rowspan="'+x.stus.length+'"><strong>'+x.stus.length+'</strong></td>':'')+
+        '</tr>';
+    }).join('');
+    return rows;
+  }).join('');
 }
 function renderAllSum(){renderTchr();renderCoh();renderSpStu();renderSpTchr();}
 
