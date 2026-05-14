@@ -240,7 +240,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
       </div>
       <div class="fg"><label>课程英文名（自动）</label><input id="s-en" readonly placeholder="自动显示"></div>
       <div class="fg"><label>学期</label>
-        <select id="s-sem"><option>2569-1</option><option>2569-2</option><option>2569-3</option><option>2570-1</option><option>2570-2</option><option>2570-3</option></select>
+        <select id="s-sem"><optgroup label="─ 2569 ─"><option>2569-1</option><option>2569-2</option><option>2569-3</option></optgroup><optgroup label="─ 2570 ─"><option>2570-1</option><option>2570-2</option><option>2570-3</option></optgroup></select>
       </div>
       <div class="fg"><label>上下半学期</label>
         <select id="s-half"><option value="">— 待定 —</option><option value="全学期">全学期</option><option value="上半学期">上半</option><option value="下半学期">下半</option></select>
@@ -281,7 +281,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
         <span style="font-size:10px;color:#ccc;margin-left:6px">点击「课程代码」或「上下半」可排序</span>
       </span>
       <div style="display:flex;gap:6px;align-items:center">
-        <select id="sch-sem-f" onchange="renderSch()" style="font-size:11px;padding:4px 8px;width:auto"><option value="">全部学期</option><option>2569-1</option><option>2569-2</option><option>2569-3</option><option>2570-1</option><option>2570-2</option><option>2570-3</option></select>
+        <select id="sch-sem-f" onchange="renderSch()" style="font-size:11px;padding:4px 8px;width:auto"><option value="">全部学期</option><optgroup label="─ 2569 ─"><option>2569-1</option><option>2569-2</option><option>2569-3</option></optgroup><optgroup label="─ 2570 ─"><option>2570-1</option><option>2570-2</option><option>2570-3</option></optgroup></select>
         <button class="btn btn-sm" onclick="syncToSheets('schedule')">↑ 上传</button>
         <button class="btn btn-sm" onclick="syncFromSheets('schedule')">↓ 下载</button>
         <button class="btn btn-sm no-print" onclick="printPanel('sch')">🖨️ 列印</button>
@@ -321,7 +321,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
         <select id="p-cls"><option value="IS-222">IS-222</option><option value="SG-222">SG-222</option></select>
       </div>
       <div class="fg"><label>学期</label>
-        <select id="p-sem"><option>2569-1</option><option>2569-2</option><option>2569-3</option><option>2570-1</option><option>2570-2</option><option>2570-3</option></select>
+        <select id="p-sem"><optgroup label="─ 2569 ─"><option>2569-1</option><option>2569-2</option><option>2569-3</option></optgroup><optgroup label="─ 2570 ─"><option>2570-1</option><option>2570-2</option><option>2570-3</option></optgroup></select>
       </div>
     </div>
     <div class="g3">
@@ -338,7 +338,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
         <span style="font-size:10px;color:#ccc;margin-left:6px">点击「学号」或「授课老师」可排序</span>
       </span>
       <div style="display:flex;gap:6px;align-items:center">
-        <select id="sp-sem-f" onchange="renderSp()" style="font-size:11px;padding:4px 8px;width:auto"><option value="">全部学期</option><option>2569-1</option><option>2569-2</option><option>2569-3</option><option>2570-1</option><option>2570-2</option><option>2570-3</option></select>
+        <select id="sp-sem-f" onchange="renderSp()" style="font-size:11px;padding:4px 8px;width:auto"><option value="">全部学期</option><optgroup label="─ 2569 ─"><option>2569-1</option><option>2569-2</option><option>2569-3</option></optgroup><optgroup label="─ 2570 ─"><option>2570-1</option><option>2570-2</option><option>2570-3</option></optgroup></select>
         <button class="btn btn-sm" onclick="syncToSheets('special')">↑ 上传</button>
         <button class="btn btn-sm" onclick="syncFromSheets('special')">↓ 下载</button>
         <button class="btn btn-sm no-print" onclick="printPanel('sp')">🖨️ 列印</button>
@@ -375,7 +375,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
       <select id="f-tc-d" onchange="filterTchrByDept()"><option value="">全部</option></select>
       <label>任课老师</label><select id="f-tc" onchange="renderTchr()"><option value="">请选择</option></select>
       <label>学期</label>
-      <select id="f-tc-s" onchange="renderTchr()"><option value="">全部</option><option>2569-1</option><option>2569-2</option><option>2569-3</option><option>2570-1</option><option>2570-2</option><option>2570-3</option></select>
+      <select id="f-tc-s" onchange="renderTchr()"><option value="">全部</option><optgroup label="─ 2569 ─"><option>2569-1</option><option>2569-2</option><option>2569-3</option></optgroup><optgroup label="─ 2570 ─"><option>2570-1</option><option>2570-2</option><option>2570-3</option></optgroup></select>
       <label>课程类型</label>
       <select id="f-tc-t" onchange="renderTchr()"><option value="">全部</option><option>正常</option><option>英文</option><option>实习</option><option>SG</option><option>Capstone</option></select>
     </div>
@@ -394,7 +394,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
       <select id="f-co-d" onchange="filterCohByDept()"><option value="">全部</option></select>
       <label>届别</label><select id="f-co" onchange="renderCoh()"><option value="">请选择</option></select>
       <label>学期</label>
-      <select id="f-co-s" onchange="renderCoh()"><option value="">全部</option><option>2569-1</option><option>2569-2</option><option>2569-3</option><option>2570-1</option><option>2570-2</option><option>2570-3</option></select>
+      <select id="f-co-s" onchange="renderCoh()"><option value="">全部</option><optgroup label="─ 2569 ─"><option>2569-1</option><option>2569-2</option><option>2569-3</option></optgroup><optgroup label="─ 2570 ─"><option>2570-1</option><option>2570-2</option><option>2570-3</option></optgroup></select>
     </div>
     <div class="card">
       <div class="ct" id="co-ttl">班级课程总表</div>
@@ -410,7 +410,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
       <label>搜索</label><input id="f-stu" placeholder="姓名/学号" style="width:150px" oninput="renderSpStu()">
       <label>学生专业</label><select id="f-sm" onchange="renderSpStu()"><option value="">全部</option></select>
       <label>学期</label>
-      <select id="f-sp-sem" onchange="renderSpStu()"><option value="">全部</option><option>2569-1</option><option>2569-2</option><option>2569-3</option><option>2570-1</option><option>2570-2</option><option>2570-3</option></select>
+      <select id="f-sp-sem" onchange="renderSpStu()"><option value="">全部</option><optgroup label="─ 2569 ─"><option>2569-1</option><option>2569-2</option><option>2569-3</option></optgroup><optgroup label="─ 2570 ─"><option>2570-1</option><option>2570-2</option><option>2570-3</option></optgroup></select>
     </div>
     <div class="card">
       <div class="ct">SG/IS 排课总表 · 学生维度</div>
@@ -427,7 +427,7 @@ tr.dt td{background:#F5F4FE;font-size:11px;color:#888;font-style:italic}
       <select id="f-st-d" onchange="filterSpTchrByDept()"><option value="">全部</option></select>
       <label>授课老师</label><select id="f-st" onchange="renderSpTchr()"><option value="">请选择</option></select>
       <label>学期</label>
-      <select id="f-st-s" onchange="renderSpTchr()"><option value="">全部</option><option>2569-1</option><option>2569-2</option><option>2569-3</option><option>2570-1</option><option>2570-2</option><option>2570-3</option></select>
+      <select id="f-st-s" onchange="renderSpTchr()"><option value="">全部</option><optgroup label="─ 2569 ─"><option>2569-1</option><option>2569-2</option><option>2569-3</option></optgroup><optgroup label="─ 2570 ─"><option>2570-1</option><option>2570-2</option><option>2570-3</option></optgroup></select>
     </div>
     <div class="card">
       <div class="ct">SG/IS 排课总表 · 老师维度</div>
@@ -1291,7 +1291,7 @@ function autoSyncBtec(){
 function renderSta(){
   const yr=document.getElementById('sta-yr')?document.getElementById('sta-yr').value:'';
   // 根据学年决定显示哪三个学期
-  const activeSems=yr?['1','2','3'].map(s=>yr+'-'+s):['2569-1','2569-2','2569-3','2570-1','2570-2','2570-3'].filter(s=>schD.some(r=>r.sem===s)||spD.some(r=>r.sem===s)).slice(0,3).concat(['2569-1','2569-2','2569-3']).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3);
+  const activeSems=yr?['1','2','3'].map(s=>yr+'-'+s):['2569-1','2569-2','2569-3'];
   // 动态产生表头
   const semHdrRow=document.getElementById('sta-thead-sems');
   const semSubRow=document.getElementById('sta-thead-sub');
@@ -1329,7 +1329,9 @@ function renderSta(){
       const k=t.n.replace(/[^a-zA-Z0-9]/g,'_');
       const semDetails=activeSems.map(s=>semDetail(t.n,s));
       const d1=semDetails[0],d2=semDetails[1],d3=semDetails[2];
-      const totalWt=Math.round(semDetails.reduce((s,d)=>s+d.wt,0)*100)/100;
+      // 总计 = 所有已选学年的学期（或全部学年）
+      const totalSems=yr?activeSems:['2569-1','2569-2','2569-3','2570-1','2570-2','2570-3'];
+      const totalWt=Math.round(totalSems.reduce((s,sem)=>{const d=semDetail(t.n,sem);return s+d.wt;},0)*100)/100;
       const btec=btecD[t.n]||0;
       const yearTotal=Math.round((totalWt+btec)*100)/100;
       dWt+=yearTotal;
